@@ -18,12 +18,13 @@ fn init_pool() -> Pool<ConnectionManager<PgConnection>> {
 	Pool::builder().max_size(32).build(manager).unwrap()
 }
 
-pub fn rocket_factory() -> Result<rocket::Rocket, String> {
+#[rocket::main]
+async fn main() -> Result<(), String> {
 	dotenv::dotenv().ok();
 
 	let pool = init_pool();
 
-	let rocket = rocket::ignite()
+	let rocket = rocket::build()
 		.manage(pool)
 		.mount(
 			"/oauth",
@@ -51,5 +52,9 @@ pub fn rocket_factory() -> Result<rocket::Rocket, String> {
 		)
 		// .mount("/messages", routes![api::message::subscribe_to_messages])
 		.mount("/", routes![api::index::index, api::index::index_callback]);
-	Ok(rocket)
+
+	if let Err(err) = rocket.launch().await {
+		println!("Rocket Err: {}", err);
+	}
+	Ok(())
 }

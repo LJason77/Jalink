@@ -11,12 +11,12 @@ use crate::models::database::DbConn;
 type DatabasePool = Pool<ConnectionManager<diesel::PgConnection>>;
 
 #[rocket::async_trait]
-impl<'a, 'r> FromRequest<'a, 'r> for DbConn {
+impl<'r> FromRequest<'r> for DbConn {
 	type Error = ();
 
-	async fn from_request(request: &'a Request<'r>) -> Outcome<Self, Self::Error> {
+	async fn from_request(request: &'r Request<'_>) -> Outcome<Self, Self::Error> {
 		let pool = request
-			.guard::<rocket::State<DatabasePool>>()
+			.guard::<&'r rocket::State<DatabasePool>>()
 			.await
 			.unwrap();
 		match pool.get() {

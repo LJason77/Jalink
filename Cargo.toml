@@ -7,10 +7,6 @@ readme = "README.md"
 repository = "https://github.com/LJason77/Jalink"
 keywords = ["IM"]
 
-[lib]
-name = "jalink"
-path = "src/lib.rs"
-
 [profile.release]
 codegen-units = 1
 lto = "fat"

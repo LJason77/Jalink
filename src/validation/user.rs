@@ -8,10 +8,10 @@ use rocket::{request, Request};
 pub const SECRET_KEY: &[u8; 6] = b"secret";
 
 #[rocket::async_trait]
-impl<'a, 'r> FromRequest<'a, 'r> for Claims {
+impl<'r> FromRequest<'r> for Claims {
 	type Error = ();
 
-	async fn from_request(request: &'a Request<'r>) -> request::Outcome<Self, Self::Error> {
+	async fn from_request(request: &'r Request<'_>) -> request::Outcome<Self, Self::Error> {
 		// 从 Authorization 获取加密的 token
 		let encode_token = if let Some(bearer) = request.headers().get_one("Authorization") {
 			&bearer[7..]
