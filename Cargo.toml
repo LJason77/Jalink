@@ -15,12 +15,16 @@ panic = "abort"
 [dependencies]
 bson = "1.2"
 bytes = "1.0"
-chrono = { version = "0.4", features = ["serde"] }
 dotenv = "0.15"
 hyper = { version = "0.14", features = ["client"] }
 hyper-tls = "0.5"
 jsonwebtoken = "7.2"
 serde_json = "1.0"
+
+[dependencies.chrono]
+version = "0.4"
+default-features = false
+features = ["serde"]
 
 [dependencies.mongodb]
 version = "1.2"

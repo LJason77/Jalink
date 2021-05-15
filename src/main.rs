@@ -1,3 +1,5 @@
+use dotenv::dotenv;
+use mongodb::{Client, Database};
 use rocket::routes;
 
 mod api;
@@ -5,17 +7,17 @@ mod models;
 mod validation;
 
 /// 初始化 数据库连接池
-async fn init_pool() -> mongodb::Database {
-	let database_url = std::env::var("DATABASE_URL").unwrap_or_else(|_| {
+async fn init_pool() -> Database {
+	let database_url = dotenv::var("DATABASE_URL").unwrap_or_else(|_| {
 		"mongodb://root:root@127.0.0.1:27017/messenger?authSource=admin".to_string()
 	});
-	let client = mongodb::Client::with_uri_str(&database_url).await.unwrap();
+	let client = Client::with_uri_str(&database_url).await.unwrap();
 	client.database("messenger")
 }
 
 #[rocket::main]
 async fn main() -> Result<(), String> {
-	dotenv::dotenv().ok();
+	dotenv().ok();
 
 	let db = init_pool().await;
 
