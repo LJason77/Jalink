@@ -1,28 +1,23 @@
-use chrono::NaiveDateTime;
 use serde::{Deserialize, Serialize};
 
-use crate::schema::messages;
+use super::deserialize_oid;
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct MessagePost {
-	pub content: String,
-}
-
-#[derive(Debug, Serialize, Queryable)]
+#[derive(Serialize, Deserialize)]
 pub struct Message {
-	pub id: i32,
+	/// id
+	#[serde(deserialize_with = "deserialize_oid")]
+	pub _id: String,
+	/// 对话 id
+	#[serde(deserialize_with = "deserialize_oid")]
+	pub cid: String,
+	/// 发送者
+	pub user: String,
+	/// 消息正文
 	pub content: String,
-	pub user_id: i32,
-	pub conversation_id: i32,
-	pub created_at: NaiveDateTime,
-	// pub mine: bool,
-	// pub receiver_id: String,
 }
 
-#[derive(Default, Insertable)]
-#[table_name = "messages"]
-pub struct NewMessage<'a> {
-	pub content: &'a str,
-	pub user_id: i32,
-	pub conversation_id: i32,
+#[derive(Serialize, Deserialize)]
+pub struct NewMessage {
+	/// 消息正文
+	pub content: String,
 }

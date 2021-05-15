@@ -1,35 +1,30 @@
 use serde::{Deserialize, Serialize};
 
-use crate::schema::users;
+use super::{default_object_id, deserialize_oid};
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct Claims {
-	pub id: i32,
-	pub login: String,
-	pub exp: usize,
+#[derive(Serialize, Deserialize)]
+pub struct AuthUser {
+	#[serde(deserialize_with = "deserialize_oid")]
+	pub _id: String,
+	pub name: String,
+	pub password: String,
 }
 
-#[derive(Debug, Deserialize)]
-pub struct Github {
-	#[serde(rename = "id", default)]
-	pub github_id: i32,
-	#[serde(rename = "login", default)]
-	pub username: String,
-	pub avatar_url: String,
+/// 新账户
+#[derive(Serialize, Deserialize)]
+pub struct NewUser {
+	/// 用户名
+	pub name: String,
+	/// 密码
+	pub password: String,
 }
 
-#[derive(Debug, Default, Queryable, Serialize, Deserialize)]
+/// 账户
+#[derive(Serialize, Deserialize)]
 pub struct User {
-	pub id: i32,
-	pub username: String,
-	pub avatar_url: Option<String>,
-	pub github_id: i32,
-}
-
-#[derive(Insertable)]
-#[table_name = "users"]
-pub struct NewUser<'a> {
-	pub username: &'a str,
-	pub avatar_url: Option<&'a str>,
-	pub github_id: &'a i32,
+	/// id
+	#[serde(default = "default_object_id", deserialize_with = "deserialize_oid")]
+	pub _id: String,
+	/// 账户名
+	pub name: String,
 }

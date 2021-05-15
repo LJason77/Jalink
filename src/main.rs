@@ -1,57 +1,38 @@
-#[macro_use]
-extern crate diesel;
-
-use diesel::r2d2::{ConnectionManager, Pool};
-use diesel::PgConnection;
 use rocket::routes;
 
-pub mod api;
-pub mod models;
-pub mod schema;
-pub mod validation;
+mod api;
+mod models;
+mod validation;
 
 /// 初始化 数据库连接池
-fn init_pool() -> Pool<ConnectionManager<PgConnection>> {
-	let database_url = std::env::var("DATABASE_URL")
-		.unwrap_or_else(|_| "postgres://root:a@127.0.0.1:5432/messenger".to_string());
-	let manager = ConnectionManager::<PgConnection>::new(database_url);
-	Pool::builder().max_size(32).build(manager).unwrap()
+async fn init_pool() -> mongodb::Database {
+	let database_url = std::env::var("DATABASE_URL").unwrap_or_else(|_| {
+		"mongodb://root:root@127.0.0.1:27017/messenger?authSource=admin".to_string()
+	});
+	let client = mongodb::Client::with_uri_str(&database_url).await.unwrap();
+	client.database("messenger")
 }
 
 #[rocket::main]
 async fn main() -> Result<(), String> {
 	dotenv::dotenv().ok();
 
-	let pool = init_pool();
+	let db = init_pool().await;
 
 	let rocket = rocket::build()
-		.manage(pool)
-		.mount(
-			"/oauth",
-			routes![
-				api::auth::github_oauth_start,
-				api::auth::github_oauth_callback,
-				api::auth::get_auth_user
-			],
-		)
+		.manage(db)
 		.mount(
 			"/conversations",
 			routes![
-				api::conversation::get_conversation,
-				api::conversation::get_conversations,
-				api::conversation::create_conversation
+				api::conversation::create_conversation,
+				api::conversation::get_conversations
 			],
 		)
 		.mount(
-			"/conversations",
-			routes![
-				api::message::create_message,
-				api::message::get_message,
-				api::message::read_message
-			],
+			"/messages",
+			routes![api::message::create_message, api::message::get_messages],
 		)
-		// .mount("/messages", routes![api::message::subscribe_to_messages])
-		.mount("/", routes![api::index::index, api::index::index_callback]);
+		.mount("/", routes![api::index::register, api::index::login]);
 
 	if let Err(err) = rocket.launch().await {
 		println!("Rocket Err: {}", err);
